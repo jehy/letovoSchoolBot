@@ -1,0 +1,14 @@
+{
+  "telegram": {
+    "token": "YOUR_TELEGRAM_BOT_TOKEN"
+  },
+  "knex": {
+    "client": "mysql",
+    "connection": {
+      "host": "localhost",
+      "user": "user",
+      "password": "password",
+      "database": "database"
+    }
+  }
+}
