@@ -28,6 +28,9 @@ function escapeHtml(unsafe) {
   {
     unsafe = '';
   }
+  else {
+    unsafe = String(unsafe);
+  }
   return unsafe
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
