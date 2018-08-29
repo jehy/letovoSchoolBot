@@ -2,15 +2,74 @@
 
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('config');
-const debug = require('debug')('letovoBot');
+const debug = require('debug')('letovoBot:bot');
 const Promise = require('bluebird');
 const Knex = require('knex');
+const moment = require('moment');
+const {Action, Status} = require('./meta');
 
 debug.enabled = true;
 const {token} = config.telegram;
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, {polling: true});
+let messageQueue = [];
+const messageLastSent = {};
+
+function addBotQueue(userId, text, options = undefined)
+{
+  messageQueue.push({userId, text, options});
+}
+
+function clearLastSent()
+{
+  Object.entries(messageLastSent).forEach(([user, sentTime])=>{
+    if (moment().subtract(1, 's').isAfter(sentTime))
+    {
+      delete messageLastSent[user];
+    }
+  });
+}
+
+async function checkLastSent()
+{
+  while (true)
+  {
+    clearLastSent();
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.delay(1000);
+  }
+}
+checkLastSent();
+
+async function sendBotQueue()
+{
+  let sentNum = 0;
+  messageQueue = messageQueue.filter((message)=>{
+    if (messageLastSent[message.userId])
+    {
+      return true; // do not send it yet
+    }
+    if (sentNum >= 30)
+    {
+      return true; // do not send it yet
+    }
+    bot.sendMessage(message.userId, message.text, message.options);
+    sentNum++;
+    return false;
+  });
+}
+
+async function checkBotQueue()
+{
+  while (true)
+  {
+    sendBotQueue();
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.delay(1000);
+  }
+}
+checkBotQueue();
 
 const captureQueries = function (builder) {
   builder.on('query', (query) => {
@@ -22,18 +81,6 @@ const knex = Knex(config.knex);
 knex.client.on('start', captureQueries);
 let categories;
 
-const Action = {
-  REPORT_PROBLEM: 1,
-  ADD_NAME: 2,
-  ADD_PHONE: 3,
-};
-
-
-const Status = {
-  NEW: 1,
-  SENT: 2,
-  PROCESSED: 3,
-};
 
 bot.on('polling_error', (error) => {
   debug(`Polling error: ${error.code}`);  // => 'EFATAL'
@@ -111,7 +158,7 @@ async function showMenu(msg, text)
       resize_keyboard: true,
     }),
   };
-  bot.sendMessage(userId, text, opts);
+  addBotQueue(userId, text, opts);
   if (!user.phone)
   {
     const phoneButton = [];
@@ -128,7 +175,7 @@ async function showMenu(msg, text)
       }),
     };
     await Promise.delay(100);
-    bot.sendMessage(userId, 'Так же рекомендуем вам прелоставить номер телефона для ответа нажатием кнопки снизу', opts2);
+    addBotQueue(userId, 'Так же рекомендуем вам предоставить номер телефона для ответа нажатием кнопки снизу', opts2);
   }
 }
 
@@ -159,7 +206,7 @@ bot.on('callback_query', async (callbackQuery)=>{
         remove_keyboard: true,
       }),
     };
-    bot.sendMessage(userId, 'Пожалуйста, введите имя (как обычное сообщение в чат).', opts2);
+    addBotQueue(userId, 'Пожалуйста, введите имя (как обычное сообщение в чат).', opts2);
     return;
   }
   if (action === Action.REPORT_PROBLEM)
@@ -179,7 +226,7 @@ bot.on('callback_query', async (callbackQuery)=>{
         resize_keyboard: false,
       },
     };
-    bot.sendMessage(userId, 'Пожалуйста, выберите категорию проблемы', opts);
+    addBotQueue(userId, 'Пожалуйста, выберите категорию проблемы', opts);
     return;
   }
   const res = await knex('user_action').select('action_id').where({user_id: userId}).limit(1).first();
@@ -204,6 +251,7 @@ bot.on('callback_query', async (callbackQuery)=>{
   {
     const startText = 'Что-то пошло не так, пожалуйста, попробуйте снова:';
     await knex('user_action').delete().where({user_id: userId});
+    await knex('action_choice').delete().where({user_id: userId});
     await showMenu(callbackQuery, startText);
     return;
   }
@@ -219,7 +267,7 @@ bot.on('callback_query', async (callbackQuery)=>{
     choice_id: action,
     added: knex.fn.now(),
   });
-  bot.sendMessage(userId, `Вы выбрали категорию "${chosenCategory.name}".`
+  addBotQueue(userId, `Вы выбрали категорию "${chosenCategory.name}".`
     + 'Пожалуйста, введите описание проблемы (как обычное сообщение в чат).', opts2);
 });
 
@@ -248,7 +296,7 @@ bot.on('message', async (msg, meta) => {
   const userId = msg.from.id;
   if (msg.chat.type !== 'private') // group chat
   {
-    bot.sendMessage(userId, 'Пожалуйста, пишите боту напрямую, а не в групповой чат.');
+    addBotQueue(userId, 'Пожалуйста, пишите боту напрямую, а не в групповой чат.');
     return;
   }
 
@@ -259,7 +307,7 @@ bot.on('message', async (msg, meta) => {
         remove_keyboard: true,
       },
     };
-    bot.sendMessage(userId, 'Простите, я пока не умею так.', opts);
+    addBotQueue(userId, 'Простите, я пока не умею так.', opts);
     return;
   }
   const actionId = res.action_id;
@@ -282,7 +330,7 @@ bot.on('message', async (msg, meta) => {
           remove_keyboard: true,
         },
       };
-      bot.sendMessage(userId, 'Пожалуйста, выберите категорию проблемы', opts);
+      addBotQueue(userId, 'Пожалуйста, выберите категорию проблемы', opts);
       return;
     }
     const message = msg.text.trim();

@@ -10,5 +10,13 @@
       "password": "password",
       "database": "database"
     }
+  },
+  "mailgun":
+  {
+    "apiKey": "xxx",
+    "username": "yyy",
+    "to": "some@mail.com",
+    "from": "some@mail.com",
+    "domain": "www.domain.com"
   }
 }

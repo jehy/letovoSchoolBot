@@ -7,10 +7,7 @@
     "bot": "node --use-strict ./bot.js",
     "mailer": "node --use-strict ./mailer.js",
     "start": "node --use-strict ./index.js",
-    "lint": "node ./node_modules/eslint/bin/eslint.js ./src/js server.js webpack.config.js webpack.dev.js webpack.dev.js mugrations bin knexfile.js modules",
-    "build-dev": "node ./node_modules/webpack/bin/webpack.js --env=dev --progress --profile --colors",
-    "build": "node ./node_modules/webpack/bin/webpack.js --env=prod --progress --profile --colors",
-    "prepare": "npm run build",
+    "lint": "node ./node_modules/eslint/bin/eslint.js ./bot.js ./mailer.ks ./meta.js ./migrations",
     "test": "mocha --exit",
     "migrate": "./node_modules/.bin/knex migrate:latest"
   },
@@ -21,6 +18,8 @@
     "config": "^2.0.1",
     "debug": "^3.1.0",
     "knex": "^0.15.2",
+    "mailgun-js": "^0.20.0",
+    "moment": "^2.22.2",
     "mysql": "^2.16.0",
     "node-telegram-bot-api": "^0.30.0"
   },
