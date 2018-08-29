@@ -183,6 +183,9 @@ async function showMenu(msg, text)
 // Matches "/echo [whatever]"
 bot.onText(/\/start/, async (msg) => {
   debug('start message from user');
+  const userId = msg.from.id;
+  await knex('user_action').delete().where({user_id: userId});
+  await knex('action_choice').delete().where({user_id: userId});
   const startText = 'Вас приветствует бот для сообщения о проблемах в школе Летово. Вы можете:';
   await showMenu(msg, startText);
 });

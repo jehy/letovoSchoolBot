@@ -31,17 +31,33 @@ async function sendEmails()
       'categories.name as category', 'messages.added', 'messages.message')
     .where('messages.status', Status.NEW);
   return Promise.map(messages, async (message)=>{
-    const text = `Имя: ${message.name}\nТелефон: ${message.phone}\nНик в телеграмме: ${message.telegram_nick}`
-      + `\nИмя в телеграмме: ${message.telegram_name}\nФамилия в телеграмме: ${message.telegram_last_name}\n`
-      + `Категория: ${message.category}\n`
-      + `Дата: ${message.added}\nСообщение: ${message.message}`;
-
-
-    const html = `<b>Имя:</b> ${message.name}<br><b>Телефон:</b> ${message.phone}<br><b>Ник в телеграмме:</b> ${message.telegram_nick}`
-      + `<br><b>Имя в телеграмме:</b> ${message.telegram_name}<br><b>Фамилия в телеграмме:</b> ${message.telegram_last_name}<br>`
-      + `<b>Категория:</b> ${message.category}<br>`
-      + `<b>Дата:</b> ${message.added}<br>Сообщение: ${message.message}`;
-
+    const data = [];
+    data.push({key: 'ID', value: message.id});
+    if (message.name)
+    {
+      data.push({key: 'Имя', value: message.name});
+    }
+    if (message.phone)
+    {
+      data.push({key: 'Телефон', value: message.phone});
+    }
+    if (message.telegram_nick)
+    {
+      data.push({key: 'Ник в телеграмме', value: message.telegram_nick});
+    }
+    if (message.telegram_name)
+    {
+      data.push({key: 'Имя в телеграмме', value: message.telegram_name});
+    }
+    if (message.telegram_last_name)
+    {
+      data.push({key: 'Фамилия в телеграмме', value: message.telegram_last_name});
+    }
+    data.push({key: 'Категория', value: message.category});
+    data.push({key: 'Дата', value: message.added});
+    data.push({key: 'Сообщение', value: message.message});
+    const text = data.map((field=>`${field.key}: ${field.value}`)).join('\n');
+    const html = data.map((field=>`<b>${field.key}</b>: ${field.value}`)).join('<br>');
     let reply;
     try {
       reply = await mailgun.messages().send({
