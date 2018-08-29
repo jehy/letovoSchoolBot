@@ -1,0 +1,14 @@
+{
+  "apps": [
+    {
+      "name": "letovo-bot",
+      "script": "npm",
+      "args": "run bot"
+    },
+    {
+      "name": "letovo-mailer",
+      "script": "npm",
+      "args": "run mailer"
+    }
+  ]
+}
