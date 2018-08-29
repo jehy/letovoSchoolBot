@@ -24,6 +24,10 @@ knex.client.on('start', captureQueries);
 
 
 function escapeHtml(unsafe) {
+  if (!unsafe)
+  {
+    unsafe = '';
+  }
   return unsafe
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
