@@ -55,6 +55,7 @@ async function sendBotQueue()
       return true; // do not send it yet
     }
     bot.sendMessage(message.userId, message.text, message.options);
+    messageLastSent[message.userId] = moment();
     sentNum++;
     return false;
   });
