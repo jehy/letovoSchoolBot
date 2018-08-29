@@ -114,6 +114,7 @@ async function checkAuthorised(from) {
       telegram_nick: from.username,
       id: from.id,
       telegram_name: from.first_name,
+      telegram_last_name: from.last_name,
     });
   }
   return user;

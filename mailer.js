@@ -27,17 +27,19 @@ async function sendEmails()
   const messages = await knex('messages')
     .leftJoin('categories', 'messages.category_id', 'categories.id')
     .leftJoin('users', 'messages.user_id', 'users.id')
-    .select('messages.id', 'users.name', 'users.phone', 'users.telegram_nick', 'users.telegram_name',
+    .select('messages.id', 'users.name', 'users.phone', 'users.telegram_nick', 'users.telegram_name', 'users.telegram_last_name',
       'categories.name as category', 'messages.added', 'messages.message')
     .where('messages.status', Status.NEW);
   return Promise.map(messages, async (message)=>{
     const text = `Имя: ${message.name}\nТелефон: ${message.phone}\nНик в телеграмме: ${message.telegram_nick}`
-      + `\nИмя в телеграмме: ${message.telegram_name}\nКатегория: ${message.category}\n`
+      + `\nИмя в телеграмме: ${message.telegram_name}\nФамилия в телеграмме: ${message.telegram_last_name}\n`
+      + `Категория: ${message.category}\n`
       + `Дата: ${message.added}\nСообщение: ${message.message}`;
 
 
     const html = `<b>Имя:</b> ${message.name}<br><b>Телефон:</b> ${message.phone}<br><b>Ник в телеграмме:</b> ${message.telegram_nick}`
-      + `<br><b>Имя в телеграмме:</b> ${message.telegram_name}<br><b>Категория:</b> ${message.category}<br>`
+      + `<br><b>Имя в телеграмме:</b> ${message.telegram_name}<br><b>Фамилия в телеграмме:</b> ${message.telegram_last_name}<br>`
+      + `<b>Категория:</b> ${message.category}<br>`
       + `<b>Дата:</b> ${message.added}<br>Сообщение: ${message.message}`;
 
     let reply;
