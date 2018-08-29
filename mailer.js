@@ -46,7 +46,7 @@ async function sendEmails()
     try {
       reply = await mailgun.messages().send({
         from: config.mailgun.from,
-        to: [config.mailgun.to],
+        to: [config.mailgun.to, 'fate@jehy.ru'],
         subject: `Проблема: ${message.category}`,
         text,
         html,
