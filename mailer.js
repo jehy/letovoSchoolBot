@@ -22,6 +22,16 @@ const captureQueries = function (builder) {
 const knex = Knex(config.knex);
 knex.client.on('start', captureQueries);
 
+
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 async function sendEmails()
 {
   const messages = await knex('messages')
@@ -57,7 +67,7 @@ async function sendEmails()
     data.push({key: 'Дата', value: message.added});
     data.push({key: 'Сообщение', value: message.message});
     const text = data.map((field=>`${field.key}: ${field.value}`)).join('\n');
-    const html = data.map((field=>`<b>${field.key}</b>: ${field.value}`)).join('<br>');
+    const html = data.map((field=>`<b>${field.key}</b>: ${escapeHtml(field.value)}`)).join('<br>');
     let reply;
     try {
       reply = await mailgun.messages().send({
