@@ -3,7 +3,7 @@
 [![dependencies Status](https://david-dm.org/jehy/letovoSchoolBot/status.svg)](https://david-dm.org/jehy/letovoSchoolBot)
 [![devDependencies Status](https://david-dm.org/jehy/letovoSchoolBot/dev-status.svg)](https://david-dm.org/jehy/letovoSchoolBot?type=dev)
 
-Simple bor for reporting problems at school.
+Simple bot for reporting problems at school.
 You can provide your telegram details, phone, name and report a problem in particular
 category.
 
