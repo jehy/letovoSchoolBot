@@ -15,8 +15,8 @@
   {
     "apiKey": "xxx",
     "username": "yyy",
-    "to": "some@mail.com",
-    "from": "some@mail.com",
+    "to": "receiver@mail.com",
+    "from": "sender@mail.com",
     "domain": "www.domain.com"
   }
 }
