@@ -14,6 +14,10 @@ You can find this bot on telegram as  `@letovoSchoolBot`.
 * Mailgun account
 
 **Config:**
+
+Please copy `config/config.json` to `config/runtime.json` to override it.
+
+It should look like this:
 ```json
 {
   "telegram": {
